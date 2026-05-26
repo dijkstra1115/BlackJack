@@ -12,8 +12,13 @@ import { io, type Socket } from 'socket.io-client';
 
 export type GameSocket = Socket<ServerToClientEvents, ClientToServerEvents>;
 
+// Resolution order:
+//   1. Explicit VITE_SERVER_URL (set at build time for unusual deployments)
+//   2. Production build → same origin (server serves both static + socket.io)
+//   3. Dev → localhost:3001 (Vite dev server on 5173, server on 3001)
 const SERVER_URL =
-  import.meta.env.VITE_SERVER_URL ?? `http://${window.location.hostname}:3001`;
+  (import.meta.env.VITE_SERVER_URL as string | undefined) ??
+  (import.meta.env.PROD ? '' : `http://${window.location.hostname}:3001`);
 
 let singleton: GameSocket | null = null;
 

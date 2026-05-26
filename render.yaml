@@ -1,0 +1,28 @@
+# Render.com blueprint — single web service serves Express + Socket.io and
+# also hosts the built React client. One URL, no CORS, no cross-service env vars.
+#
+# To deploy:
+#   1. Push this repo to GitHub (already done at github.com/dijkstra1115/BlackJack).
+#   2. Render dashboard → "New +" → "Blueprint" → connect the repo.
+#   3. Render reads this file and provisions the service automatically.
+#
+# Free plan caveats:
+#   - The service sleeps after ~15 min of inactivity (next request takes ~30s
+#     to wake). Fine for friends-only gameplay sessions.
+#   - 750 instance-hours/month — plenty for one service.
+
+services:
+  - type: web
+    name: blackjack
+    runtime: node
+    plan: free
+    region: singapore     # Render's APAC region — closer for Taiwan users
+    rootDir: .
+    buildCommand: npm install && npm run build:client
+    startCommand: npm run start:prod
+    envVars:
+      - key: NODE_VERSION
+        value: "20"
+      - key: NODE_ENV
+        value: production
+    healthCheckPath: /health

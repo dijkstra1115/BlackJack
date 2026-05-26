@@ -1,6 +1,9 @@
 import cors from 'cors';
 import express, { type Express } from 'express';
 import { createServer as createHttpServer, type Server as HttpServer } from 'node:http';
+import { existsSync } from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { Server as IoServer } from 'socket.io';
 import type {
   ClientToServerEvents,
@@ -48,6 +51,27 @@ export function createServer(): ServerHandles {
       spectators: [...room.members.values()].filter(m => !m.isSeated()).length,
     });
   });
+
+  // In production, the same server also serves the built React client.
+  // This lets us deploy as a single web service (one URL, no CORS hops,
+  // no separate static-site config). The client build lives at ../client/dist
+  // relative to this file's compile-time location.
+  if (process.env.NODE_ENV === 'production' || process.env.SERVE_CLIENT === '1') {
+    const here = path.dirname(fileURLToPath(import.meta.url));
+    const clientDist = path.resolve(here, '../../../client/dist');
+    if (existsSync(clientDist)) {
+      app.use(express.static(clientDist));
+      // SPA fallback for client-side routes (anything that didn't match an
+      // API route or a static file). Avoid hijacking socket.io paths — those
+      // are handled by the IoServer attached to httpServer below.
+      app.get(/^\/(?!socket\.io|health|rooms\/).*/, (_req, res) => {
+        res.sendFile(path.join(clientDist, 'index.html'));
+      });
+    } else {
+      console.warn(`[server] NODE_ENV=production but ${clientDist} not found — ` +
+                   `did the client build complete?`);
+    }
+  }
 
   const httpServer = createHttpServer(app);
   const io = new IoServer<ClientToServerEvents, ServerToClientEvents>(httpServer, {
