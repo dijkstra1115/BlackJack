@@ -18,7 +18,10 @@ services:
     plan: free
     region: singapore     # Render's APAC region — closer for Taiwan users
     rootDir: .
-    buildCommand: npm install && npm run build:client
+    # NODE_ENV=production makes `npm install` skip devDependencies (vite,
+    # typescript, tailwind…). We need those for the build step, so the install
+    # explicitly includes them. tsx is already in deps so runtime is unaffected.
+    buildCommand: npm install --include=dev && npm run build:client
     startCommand: npm run start:prod
     envVars:
       - key: NODE_VERSION
