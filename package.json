@@ -1,0 +1,23 @@
+{
+  "name": "blackjack-trainer",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Multiplayer Blackjack card-counting (Hi-Lo) training simulator",
+  "workspaces": [
+    "shared",
+    "server",
+    "client"
+  ],
+  "scripts": {
+    "test": "npm test --workspace=server",
+    "test:coverage": "npm run test:coverage --workspace=server",
+    "demo": "npm run demo --workspace=server",
+    "sim": "npm run sim --workspace=server",
+    "mc": "npm run mc --workspace=server",
+    "mc-mp": "npm run mc-mp --workspace=server",
+    "server": "npm run dev --workspace=server",
+    "client": "npm run dev --workspace=client",
+    "build": "npm run build --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present"
+  }
+}
